@@ -50,16 +50,32 @@ func findAssets(body string) ([]asset, error) {
 	for _, value := range jsonAssets {
 		row := value.(map[string]interface{})
 
-		var a asset
-
-		a.url = row["url"].(string)
-		a.displayName = row["display_name"].(string)
-		a.width = int(row["width"].(float64))
-		a.height = int(row["height"].(float64))
-		a.size = row["size"].(float64)
-		a.isVideo = isVideoStream(&a, false)
-
+		a := parseAssetRow(row)
 		assets = append(assets, a)
 	}
 	return assets, nil
+}
+
+func parseAssetRow(row map[string]interface{}) asset {
+	var a asset
+
+	hasField := func(key string) bool {
+		_, ok := row[key]
+		return ok
+	}
+
+	a.url = row["url"].(string)
+	a.displayName = row["display_name"].(string)
+	if hasField("width") {
+		a.width = int(row["width"].(float64))
+	}
+	if hasField("height") {
+		a.height = int(row["height"].(float64))
+	}
+	if hasField("size") {
+		a.size = row["size"].(float64)
+	}
+	a.isVideo = isVideoStream(&a, false)
+
+	return a
 }
