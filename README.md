@@ -2,7 +2,7 @@
 You can use this tool to download videos hosted on the [Wistia](https://wistia.com/) platform.
 
 ## Download
-You can find the precompiled binaries in the [Releases](https://github.com/smbl64/wistia-dl/releases) page.
+You can find the binaries in the [Releases](https://github.com/smbl64/wistia-dl/releases) page. Windows, macOS and Linux are supported.
 ## Usage
 The command is quite simple: `wistia-dl -v <video_id> -o <output_file_name>`.
 
