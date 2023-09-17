@@ -8,74 +8,45 @@ import (
 )
 
 type asset struct {
-	url           string
-	width, height int
-	size          float64
-	displayName   string
-
-	isVideo bool
+	URL         string  `json:"url"`
+	Width       int     `json:"width"`
+	Height      int     `json:"height"`
+	Size        float64 `json:"size"`
+	DisplayName string  `json:"display_name"`
 }
 
-func isVideoStream(a *asset, allowOriginal bool) bool {
-	if allowOriginal && strings.ToLower(a.displayName) == "original file" {
+const allowOriginal = false
+
+var videoStreamRegex = regexp.MustCompile(`^\d+p$`)
+
+// Start by W.iframeInit(
+// ... followed by some text
+// ... ended by these: , {});
+var assetsRegex = regexp.MustCompile(`W\.iframeInit\((.*?)(?:,\s*{}\);)`)
+
+func (a *asset) IsVideo() bool {
+	fmt.Println(*a)
+	if allowOriginal && strings.ToLower(a.DisplayName) == "original file" {
 		return true
 	}
 
-	reg := regexp.MustCompile(`^\d+p$`)
-	return reg.MatchString(a.displayName)
+	return videoStreamRegex.MatchString(a.DisplayName)
 }
 
 func findAssets(body string) ([]asset, error) {
-	// Start by W.iframeInit(
-	// ... followed by some text
-	// ... ended by these: , {});
-	reg := regexp.MustCompile(`W\.iframeInit\((.*?)(?:,\s*{}\);)`)
-
-	target := reg.FindStringSubmatch(body)
+	target := assetsRegex.FindStringSubmatch(body)
 	if len(target) == 0 {
 		return nil, fmt.Errorf("cannot parse the json")
 	}
 
 	jsonString := target[1]
-	var parsedJson map[string]interface{}
-	json.Unmarshal([]byte(jsonString), &parsedJson)
-
-	if _, ok := parsedJson["assets"]; !ok {
-		return nil, fmt.Errorf("cannot find assets in the json")
+	var output struct {
+		Assets []asset
+	}
+	err := json.Unmarshal([]byte(jsonString), &output)
+	if err != nil {
+		return nil, err
 	}
 
-	jsonAssets := parsedJson["assets"].([]interface{})
-
-	assets := make([]asset, 0)
-	for _, value := range jsonAssets {
-		row := value.(map[string]interface{})
-
-		a := parseAssetRow(row)
-		assets = append(assets, a)
-	}
-	return assets, nil
-}
-
-func parseAssetRow(row map[string]interface{}) asset {
-	var a asset
-
-	hasField := func(key string) bool {
-		_, ok := row[key]
-		return ok
-	}
-
-	a.url = row["url"].(string)
-	a.displayName = row["display_name"].(string)
-	if hasField("width") {
-		a.width = int(row["width"].(float64))
-	}
-	if hasField("height") {
-		a.height = int(row["height"].(float64))
-	}
-	if hasField("size") {
-		a.size = row["size"].(float64)
-	}
-	a.isVideo = isVideoStream(&a, false)
-
-	return a
+	return output.Assets, nil
 }

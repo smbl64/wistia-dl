@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -24,14 +23,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = downloadVideo(opts.VideoID, opts.FileName)
+	err = process(opts.VideoID, opts.FileName)
 	if err != nil {
 		fmt.Printf("Failed: %s", err)
 		os.Exit(1)
 	}
 }
 
-func downloadVideo(videoID, filename string) (err error) {
+func process(videoID, filename string) error {
 	url := fmt.Sprintf("https://fast.wistia.net/embed/iframe/%s?videoFoam=true", videoID)
 
 	client := &http.Client{}
@@ -47,7 +46,7 @@ func downloadVideo(videoID, filename string) (err error) {
 		return fmt.Errorf("Bad status code: %d", resp.StatusCode)
 	}
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -64,9 +63,9 @@ func downloadVideo(videoID, filename string) (err error) {
 		return err
 	}
 
-	fmt.Printf("Video found. Resolution=%dx%d  Size=%s\n", asset.width, asset.height, humanize.Bytes(uint64(asset.size)))
+	fmt.Printf("Video found. Resolution=%dx%d  Size=%s\n", asset.Width, asset.Height, humanize.Bytes(uint64(asset.Size)))
 
-	return downloadFile(asset.url, filename)
+	return downloadFile(asset.URL, filename)
 }
 
 // chooseAsset finds a video stream with the highest resolution
@@ -74,16 +73,16 @@ func chooseAsset(assets []asset) (asset, error) {
 	var chosen asset
 
 	for _, a := range assets {
-		if !a.isVideo {
+		if !a.IsVideo() {
 			continue
 		}
 
-		if a.height > chosen.height {
+		if a.Height > chosen.Height {
 			chosen = a
 		}
 	}
 
-	if chosen.height > 0 {
+	if chosen.Height > 0 {
 		return chosen, nil
 	}
 
