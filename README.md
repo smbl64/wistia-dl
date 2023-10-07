@@ -1,4 +1,7 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/smbl64/wistia-dl)](https://goreportcard.com/report/github.com/smbl64/wistia-dl)
+
 # wistia-dl
+
 You can use this tool to download videos hosted on the [Wistia](https://wistia.com/) platform.
 
 ## Download
