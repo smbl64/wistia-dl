@@ -1,3 +1,4 @@
+[![Build Status](https://github.com/smbl64/wistia-dl/actions/workflows/ci.yml/badge.svg)](https://github.com/smbl64/wistia-dl/actions?query=workflow%3Aci)
 [![Go Report Card](https://goreportcard.com/badge/github.com/smbl64/wistia-dl)](https://goreportcard.com/report/github.com/smbl64/wistia-dl)
 
 # wistia-dl
