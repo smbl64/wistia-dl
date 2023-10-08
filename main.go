@@ -1,3 +1,4 @@
+// nolint: revive
 package main
 
 import (
@@ -40,10 +41,15 @@ func process(videoID, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			fmt.Printf("failed to close the body: %s", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Bad status code: %d", resp.StatusCode)
+		return fmt.Errorf("bad status code: %d", resp.StatusCode)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -99,13 +105,23 @@ func downloadFile(url, filename string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			fmt.Printf("failed to close the body: %s", err)
+		}
+	}()
 
 	out, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		err := out.Close()
+		if err != nil {
+			fmt.Printf("failed to close the output file: %s", err)
+		}
+	}()
 
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
